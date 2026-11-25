@@ -1,16 +1,30 @@
+
 using UnityEngine;
 
-public class PlayerMovement: MonoBehaviour
+public class PlayerMovement : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    public float speed = 5f;
 
-    // Update is called once per frame
     void Update()
     {
-        
+        if (Input.GetKey(KeyCode.W))
+        {
+            transform.position += transform.forward * speed * Time.deltaTime;
+        }
+
+        if (Input.GetKey(KeyCode.S))
+        {
+            transform.position -= transform.forward * speed * Time.deltaTime;
+        }
+
+        if (Input.GetKey(KeyCode.A))
+        {
+            transform.position -= transform.right * speed * Time.deltaTime;
+        }
+
+        if (Input.GetKey(KeyCode.D))
+        {
+            transform.position += transform.right * speed * Time.deltaTime;
+        }
     }
 }
