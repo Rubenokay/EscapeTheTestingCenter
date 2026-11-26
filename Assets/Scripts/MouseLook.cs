@@ -7,6 +7,7 @@ public class MouseLook : MonoBehaviour
     public Transform playerBody;
 
     private float verticalRotation = 0f;
+    private bool gameEnded = false;
 
     void Start()
     {
@@ -16,6 +17,9 @@ public class MouseLook : MonoBehaviour
 
     void Update()
     {
+        if (gameEnded)
+            return;
+
         float mouseX = Input.GetAxis("Mouse X") * sensitivity;
         float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
 
@@ -25,12 +29,21 @@ public class MouseLook : MonoBehaviour
         transform.localRotation =
             Quaternion.Euler(verticalRotation, 0f, 0f);
 
-        playerBody.Rotate(Vector3.up * mouseX);
+        if (playerBody != null)
+            playerBody.Rotate(Vector3.up * mouseX);
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
+    }
+
+    public void EndGame()
+    {
+        gameEnded = true;
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 }
