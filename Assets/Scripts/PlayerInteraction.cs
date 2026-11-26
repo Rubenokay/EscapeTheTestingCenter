@@ -12,15 +12,21 @@ public class PlayerInteraction : MonoBehaviour
     public TMP_Text objectiveText;
     public GameObject victoryPanel;
 
+    // Temporary locked-door message
+    private float messageEndTime = 0f;
+
+    // Prevent interactions after winning
+    private bool gameWon = false;
+
     void Start()
     {
-        // Hide victory screen when game starts
+        // Hide victory screen when the game starts
         if (victoryPanel != null)
         {
             victoryPanel.SetActive(false);
         }
 
-        // Set initial objective
+        // Set starting objective
         if (objectiveText != null)
         {
             objectiveText.text = "Objective: Find the keycard";
@@ -29,13 +35,17 @@ public class PlayerInteraction : MonoBehaviour
 
     void Update()
     {
-        // Clear interaction prompt
-        if (interactionPrompt != null)
+        // Stop interactions after winning
+        if (gameWon)
+            return;
+
+        // Clear prompt unless a temporary message is active
+        if (interactionPrompt != null && Time.time >= messageEndTime)
         {
             interactionPrompt.text = "";
         }
 
-        // Cast a ray from the camera
+        // Raycast from the camera
         Ray ray = new Ray(transform.position, transform.forward);
 
         if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance))
@@ -45,12 +55,14 @@ public class PlayerInteraction : MonoBehaviour
 
             GameObject target = hit.collider.gameObject;
 
-            // Keycard interaction
+            // KEYCARD INTERACTION
             if (target.name == "Keycard")
             {
-                if (interactionPrompt != null)
+                if (interactionPrompt != null &&
+                    Time.time >= messageEndTime)
                 {
-                    interactionPrompt.text = "Press E to pick up keycard";
+                    interactionPrompt.text =
+                        "Press E to pick up keycard";
                 }
 
                 if (Input.GetKeyDown(KeyCode.E))
@@ -68,10 +80,11 @@ public class PlayerInteraction : MonoBehaviour
                 }
             }
 
-            // Exit door interaction
+            // EXIT DOOR INTERACTION
             else if (target.name == "ExitDoor")
             {
-                if (interactionPrompt != null)
+                if (interactionPrompt != null &&
+                    Time.time >= messageEndTime)
                 {
                     interactionPrompt.text = hasKeycard
                         ? "Press E to unlock exit"
@@ -82,19 +95,41 @@ public class PlayerInteraction : MonoBehaviour
                 {
                     if (hasKeycard)
                     {
-                        Debug.Log("Door unlocked! You escaped!");
+                        // Mark the game as won
+                        gameWon = true;
 
-                        // Display victory screen
-                        if (victoryPanel != null)
-                        {
-                            victoryPanel.SetActive(true);
-                        }
+                        Debug.Log("Door unlocked! You escaped!");
 
                         // Update objective
                         if (objectiveText != null)
                         {
                             objectiveText.text = "Objective Complete!";
                         }
+
+                        // Clear interaction prompt
+                        if (interactionPrompt != null)
+                        {
+                            interactionPrompt.text = "";
+                        }
+
+                        // Show victory screen
+                        if (victoryPanel != null)
+                        {
+                            victoryPanel.SetActive(true);
+                        }
+
+                        // Stop camera rotation
+                        MouseLook mouseLook =
+                            GetComponent<MouseLook>();
+
+                        if (mouseLook != null)
+                        {
+                            mouseLook.EndGame();
+                        }
+
+                        // Unlock cursor for Restart button
+                        Cursor.lockState = CursorLockMode.None;
+                        Cursor.visible = true;
 
                         // Remove exit door
                         Destroy(target);
@@ -104,10 +139,17 @@ public class PlayerInteraction : MonoBehaviour
                         Debug.Log(
                             "Door is locked! Find the keycard."
                         );
+
+                        if (interactionPrompt != null)
+                        {
+                            interactionPrompt.text =
+                                "DOOR LOCKED! Find the keycard.";
+
+                            messageEndTime = Time.time + 2f;
+                        }
                     }
                 }
             }
         }
     }
 }
-
