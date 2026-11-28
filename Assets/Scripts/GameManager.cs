@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -6,38 +5,40 @@ public class GameManager : MonoBehaviour
 {
     public GameObject gameOverPanel;
     public MouseLook mouseLook;
-    public PlayerMovement playerMovement;
+    public Behaviour playerMovement;
+    [SerializeField] private bool enableGameOverTest = true;
 
-    private bool gameEnded = false;
+    public bool GameEnded { get; private set; }
 
-    void Start()
+    private void Start()
     {
         Time.timeScale = 1f;
 
         if (gameOverPanel != null)
             gameOverPanel.SetActive(false);
     }
-    void Update()
-{
-    // Temporary test for the Game Over screen
-    if (Input.GetKeyDown(KeyCode.G))
+
+    private void Update()
     {
-        Debug.Log("G KEY PRESSED!");
-        GameOver();
+        if (enableGameOverTest && Input.GetKeyDown(KeyCode.G))
+            GameOver();
     }
-}
 
     public void GameOver()
     {
-        if (gameEnded)
+        if (GameEnded)
             return;
 
-        gameEnded = true;
-
+        EndGame();
         Debug.Log("YOU WERE CAUGHT!");
 
         if (gameOverPanel != null)
             gameOverPanel.SetActive(true);
+    }
+
+    public void EndGame()
+    {
+        GameEnded = true;
 
         if (mouseLook != null)
             mouseLook.EndGame();
@@ -47,14 +48,12 @@ public class GameManager : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        Time.timeScale = 0f;
     }
 
     public void RestartGame()
     {
         Time.timeScale = 1f;
-
-        SceneManager.LoadScene(
-            SceneManager.GetActiveScene().name
-        );
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

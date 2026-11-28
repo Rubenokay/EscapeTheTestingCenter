@@ -17,9 +17,12 @@ public class PlayerInteraction : MonoBehaviour
 
     // Prevent interactions after winning
     private bool gameWon = false;
+    private GameManager gameManager;
 
     void Start()
     {
+        gameManager = FindAnyObjectByType<GameManager>();
+
         // Hide victory screen when the game starts
         if (victoryPanel != null)
         {
@@ -38,6 +41,13 @@ public class PlayerInteraction : MonoBehaviour
         // Stop interactions after winning
         if (gameWon)
             return;
+
+        if (gameManager != null && gameManager.GameEnded)
+        {
+            if (interactionPrompt != null)
+                interactionPrompt.text = "";
+            return;
+        }
 
         // Clear prompt unless a temporary message is active
         if (interactionPrompt != null && Time.time >= messageEndTime)
@@ -118,18 +128,16 @@ public class PlayerInteraction : MonoBehaviour
                             victoryPanel.SetActive(true);
                         }
 
-                        // Stop camera rotation
-                        MouseLook mouseLook =
-                            GetComponent<MouseLook>();
-
-                        if (mouseLook != null)
+                        if (gameManager != null)
                         {
-                            mouseLook.EndGame();
+                            gameManager.EndGame();
                         }
-
-                        // Unlock cursor for Restart button
-                        Cursor.lockState = CursorLockMode.None;
-                        Cursor.visible = true;
+                        else
+                        {
+                            GetComponent<MouseLook>()?.EndGame();
+                            Cursor.lockState = CursorLockMode.None;
+                            Cursor.visible = true;
+                        }
 
                         // Remove exit door
                         Destroy(target);
