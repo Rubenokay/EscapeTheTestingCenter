@@ -199,7 +199,7 @@ public class TAController : MonoBehaviour
         isCaught = true;
         detectionProgress = 1f;
 
-        GameManager gameManager = FindObjectOfType<GameManager>();
+        GameManager gameManager = FindAnyObjectByType<GameManager>();
         if (gameManager != null)
             gameManager.GameOver();
     }
